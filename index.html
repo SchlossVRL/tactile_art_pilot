@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Participant View</title>
+
+    <script src="jsPsych/jspsych.js"></script>
+    <script src="jsPsych/plugin-html-keyboard-response.js"></script>
+    <script src="jsPsych/plugin-fullscreen.js"></script>
+    <script src="jsPsych/plugin-preload.js"></script>
+    <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
+
+    <link href="jsPsych/jspsych.css" rel="stylesheet" />
+
+    <style>
+        body {
+            background-color: black;
+        }
+
+        img {
+            max-width: 80vw;
+            max-height: 80vh;
+        }
+    </style>
+</head>
+
+<body></body>
+
+<script>
+
+    async function createExperiment() {
+        /* ------------------------------
+           Initialize jsPsych
+        ------------------------------ */
+        const jsPsych = initJsPsych({
+        });
+
+        const subject_id = jsPsych.randomization.randomID(10);
+        const filename = `${subject_id}.csv`;
+
+        // Prompt for participant ID
+        var participant_id = prompt("Please enter the participant ID:");
+
+        // Ensure input is valid
+        if (!participant_id || isNaN(participant_id)) {
+            alert("Invalid participant ID! Please reload the page and enter a numeric ID.");
+            throw new Error("Invalid participant ID.");
+        }
+
+        // Add it to every trial's data
+        jsPsych.data.addProperties({
+            subject_id: subject_id,
+            participant_id: participant_id
+        });
+
+        // Set background color to gray
+        document.body.style.backgroundColor = "rgb(128,128,128)";
+
+        /* ------------------------------
+           Stimulus triplets
+        ------------------------------ */
+        const trial_sets = [
+            {
+                id: 1,
+                participant_img: "images/D1.png",
+                left_img: "images/D4.png",
+                right_img: "images/D8.png"
+            },
+            {
+                id: 2,
+                participant_img: "images/D11.png",
+                left_img: "images/D14.png",
+                right_img: "images/D16.png"
+            },
+            {
+                id: 3,
+                participant_img: "images/D17.png",
+                left_img: "images/D18.png",
+                right_img: "images/D19.png"
+            }
+        ];
+
+        /* ------------------------------
+           Randomize trial order
+        ------------------------------ */
+        const randomized_sets = jsPsych.randomization.shuffle(trial_sets);
+
+        /* ------------------------------
+           Open experimenter window
+        ------------------------------ */
+        let controlWindow = null;
+
+        const openControlWindow = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: "<p>Press SPACE to start.</p>",
+            choices: [" "],
+            on_finish: () => {
+                controlWindow = window.open(
+                    "control.html",
+                    "experimenter_controls",
+                    "width=500,height=300"
+                );
+            }
+        };
+
+        /* ------------------------------
+           Listen for experimenter responses
+        ------------------------------ */
+        window.addEventListener("message", (event) => {
+            if (event.data.type === "response") {
+                jsPsych.finishTrial({
+                    response: event.data.value
+                });
+            }
+        });
+
+        /* ------------------------------
+           Build jsPsych trials
+        ------------------------------ */
+        const trials = randomized_sets.map(t => ({
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `<img src="${t.participant_img}">`,
+            choices: "NO_KEYS",
+
+            data: {
+                trial_id: t.id,
+                participant_img: t.participant_img,
+                left_img: t.left_img,
+                right_img: t.right_img
+            },
+
+            on_load: () => {
+                // Update experimenter window for this trial
+                controlWindow.postMessage({
+                    type: "update_trial",
+                    left_img: t.left_img,
+                    right_img: t.right_img
+                }, "*");
+            }
+        }));
+
+        /* ------------------------------
+           Preload images
+        ------------------------------ */
+        const preload = {
+            type: jsPsychPreload,
+            images: trial_sets.flatMap(t => [
+                t.participant_img,
+                t.left_img,
+                t.right_img
+            ])
+        };
+
+        /* ------------------------------
+           Instructions
+        ------------------------------ */
+        const instructions = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `
+            <h2>Instructions</h2>
+            
+            <p>Press SPACE to begin the experiment.</p>
+        `,
+            choices: [" "]
+        };
+
+        /* ------------------------------
+           Debrief
+        ------------------------------ */
+        const debrief = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `
+            <h2>Debrief</h2>
+            
+            <p>Thank you for participating in this experiment...</p>
+        `,
+            choices: [" "]
+        };
+
+        /* ------------------------------
+           Save Data
+        ------------------------------ */
+        const save_data = {
+            type: jsPsychPipe,
+            action: "save",
+            experiment_id: "IMErtV4pGj6m",
+            filename: filename,
+            data_string: () => jsPsych.data.get().csv()
+        };
+
+        /* ------------------------------
+           Timeline
+        ------------------------------ */
+        const timeline = [
+            preload,
+            instructions,
+            openControlWindow,
+            {
+                type: jsPsychFullscreen,
+                fullscreen_mode: true
+            },
+            ...trials,
+            save_data,
+            debrief
+        ];
+
+        jsPsych.run(timeline);
+    }
+
+    createExperiment();
+</script>
+
+</html>
