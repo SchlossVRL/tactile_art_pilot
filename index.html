@@ -56,6 +56,21 @@
         // Set background color to gray
         document.body.style.backgroundColor = "rgb(128,128,128)";
 
+
+        /* ------------------------------
+          Inter trial interval 
+       ------------------------------ */
+        const iti = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `<div style="font-size:48px">+</div>`,
+            choices: "NO_KEYS",
+            trial_duration: 500
+        };
+
+        function withITI(trials, iti) {
+            return trials.flatMap(t => [iti, t]);
+        }
+
         /* ------------------------------
            Stimulus triplets
         ------------------------------ */
@@ -183,9 +198,65 @@
         ];
 
         /* ------------------------------
+           Breaks
+        ------------------------------ */
+        const break1 = makeBreakTrial({
+            id: 501,
+            stimulus: `<div style="font-size: 48px; color: white;">
+                TAKE A BREAK
+            </div>`,
+            left_img: "images/break_left.png",
+            right_img: "images/break_right.png"
+        });
+
+        const break2 = makeBreakTrial({
+            id: 502,
+            stimulus: `<div style="font-size: 48px; color: white;">
+                TAKE A BREAK
+            </div>`,
+            left_img: "images/break_left.png",
+            right_img: "images/break_right.png"
+        });
+
+        const break3 = makeBreakTrial({
+            id: 503,
+            stimulus: `<div style="font-size: 48px; color: white;">
+                TAKE A BREAK
+            </div>`,
+            left_img: "images/break_left.png",
+            right_img: "images/break_right.png"
+        });
+
+        /* ------------------------------
+           End
+        ------------------------------ */
+
+        const end = makeBreakTrial({
+            id: 503,
+            stimulus: `<div style="font-size: 48px; color: white;">
+                Thank you for your participation, you have completed the experimental trials. 
+                <br> You may now remove your headphones so the experimenter can provide next steps.
+            </div>`,
+            left_img: "images/break_left.png",
+            right_img: "images/break_right.png"
+        });
+
+        const end_control = [
+            {
+                id: 1000,
+                participant_img: `Thank you for your participation, you have completed the experimental trials. 
+                <br> You may now remove your headphones so the experimenter can provide next steps.`,
+                left_img: "End",
+                right_img: "End"
+            }
+        ];
+        /* ------------------------------
            Randomize trial order
         ------------------------------ */
         const randomized_sets = jsPsych.randomization.shuffle(trial_sets);
+
+        //repetition
+        const randomized_sets2 = jsPsych.randomization.shuffle(trial_sets);
 
         /* ------------------------------
            Open experimenter window
@@ -204,6 +275,30 @@
                 );
             }
         };
+
+        function makeBreakTrial({ id, stimulus, left_img, right_img }) {
+            return {
+                type: jsPsychHtmlKeyboardResponse,
+                stimulus: stimulus,
+                choices: "NO_KEYS",
+
+                data: {
+                    trial_id: id,
+                    trial_type: "break",
+                    participant_img: stimulus,
+                    left_img: left_img,
+                    right_img: right_img
+                },
+
+                on_load: () => {
+                    controlWindow.postMessage({
+                        type: "update_trial",
+                        left_img: left_img,
+                        right_img: right_img
+                    }, "*");
+                }
+            };
+        }
 
         /* ------------------------------
            Listen for experimenter responses
@@ -240,6 +335,73 @@
                 }, "*");
             }
         }));
+
+        /* ------------------------------
+           Repetition
+        ------------------------------ */
+
+        const trials2 = randomized_sets2.map(t => ({
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `<img src="${t.participant_img}">`,
+            choices: "NO_KEYS",
+
+            data: {
+                trial_id: t.id,
+                participant_img: t.participant_img,
+                left_img: t.left_img,
+                right_img: t.right_img
+            },
+
+            on_load: () => {
+                // Update experimenter window for this trial
+                controlWindow.postMessage({
+                    type: "update_trial",
+                    left_img: t.left_img,
+                    right_img: t.right_img
+                }, "*");
+            }
+        }));
+
+        //split trials for breaks
+
+        const mid1 = Math.floor(trials.length / 2);
+        const mid2 = Math.floor(trials2.length / 2);
+
+        const trials_first_half = trials.slice(0, mid1);
+        const trials_second_half = trials.slice(mid1);
+
+        const trials2_first_half = trials2.slice(0, mid2);
+        const trials2_second_half = trials2.slice(mid2);
+
+
+
+
+
+        /* ------------------------------
+           End trial
+        ------------------------------ */
+
+        /*const end_trial = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `${end_control.participant_img}`,
+            choices: "NO_KEYS",
+
+            data: {
+                trial_id: end_control.id,
+                participant_img: end_control.participant_img,
+                left_img: end_control.left_img,
+                right_img: end_control.right_img
+            },
+
+            on_load: () => {
+                // Update experimenter window for this trial
+                controlWindow.postMessage({
+                    type: "update_trial",
+                    left_img: end_control.left_img,
+                    right_img: end_control.right_img
+                }, "*");
+            }
+        };*/
 
         /* ------------------------------
            Preload images
@@ -301,7 +463,20 @@
                 type: jsPsychFullscreen,
                 fullscreen_mode: true
             },
-            ...trials,
+            //...trials_first_half,
+            ...withITI(trials_first_half, iti),
+            break1,
+            //...trials_second_half,
+            ...withITI(trials_second_half, iti),
+
+            break2,
+
+            //...trials2_first_half,
+            ...withITI(trials2_first_half, iti),
+            break3,
+            //...trials2_second_half,
+            ...withITI(trials2_second_half, iti),
+            end,
             save_data,
             debrief
         ];
