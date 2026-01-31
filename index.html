@@ -227,7 +227,7 @@
 
         const break1 = makeBreakTrial({
             id: 501,
-            stimulus: `<div style="font-size: 48px; line-height: 1.5; color: black;">
+            stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
                 You have completed block 1 of 4. You may take a short break before continuing the experiment.
             </div>`,
             left_img: "images/break1.png",
@@ -236,7 +236,7 @@
 
         const break2 = makeBreakTrial({
             id: 502,
-            stimulus: `<div style="font-size: 48px; line-height: 1.5; color: black;">
+            stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
                 You have completed block 2 of 4. You may take a short break before continuing the experiment.
             </div>`,
             left_img: "images/break2.png",
@@ -245,7 +245,7 @@
 
         const break3 = makeBreakTrial({
             id: 503,
-            stimulus: `<div style="font-size: 48px; line-height: 1.5; color: black;">
+            stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
                 You have completed block 3 of 4. You may take a short break before continuing the experiment.
             </div>`,
             left_img: "images/break3.png",
@@ -258,9 +258,18 @@
 
         const end = makeBreakTrial({
             id: 1000,
-            stimulus: `<div style="font-size: 48px; line-height: 1.5; color: black;">
+            stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
                 Thank you for your participation, you have completed the experimental trials. 
                 <br><br> You may now remove your headphones so the experimenter can provide next steps.
+            </div>`,
+            left_img: "images/end.png",
+            right_img: "images/end.png"
+        });
+
+        const thank_you = makeBreakTrial({
+            id: 1001,
+            stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
+                Data file saved. Thank you!
             </div>`,
             left_img: "images/end.png",
             right_img: "images/end.png"
@@ -477,7 +486,8 @@
             //...trials2_second_half,
             ...withITI(trials2_second_half, iti),
             end,
-            save_data
+            save_data,
+            thank_you
         ];
 
         jsPsych.run(timeline);
