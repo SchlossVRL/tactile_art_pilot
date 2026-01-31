@@ -200,31 +200,56 @@
         /* ------------------------------
            Breaks
         ------------------------------ */
+
+        function makeBreakTrial({ id, stimulus, left_img, right_img }) {
+            return {
+                type: jsPsychHtmlKeyboardResponse,
+                stimulus: stimulus,
+                choices: "NO_KEYS",
+
+                data: {
+                    trial_id: id,
+                    trial_type: "break",
+                    participant_img: stimulus,
+                    left_img: left_img,
+                    right_img: right_img
+                },
+
+                on_load: () => {
+                    controlWindow.postMessage({
+                        type: "update_trial",
+                        left_img: left_img,
+                        right_img: right_img
+                    }, "*");
+                }
+            };
+        }
+
         const break1 = makeBreakTrial({
             id: 501,
-            stimulus: `<div style="font-size: 48px; color: white;">
-                TAKE A BREAK
+            stimulus: `<div style="font-size: 48px; line-height: 1.5; color: black;">
+                You have completed block 1 of 4. You may take a short break before continuing the experiment.
             </div>`,
-            left_img: "images/break_left.png",
-            right_img: "images/break_right.png"
+            left_img: "images/break1.png",
+            right_img: "images/continue.png"
         });
 
         const break2 = makeBreakTrial({
             id: 502,
-            stimulus: `<div style="font-size: 48px; color: white;">
-                TAKE A BREAK
+            stimulus: `<div style="font-size: 48px; line-height: 1.5; color: black;">
+                You have completed block 2 of 4. You may take a short break before continuing the experiment.
             </div>`,
-            left_img: "images/break_left.png",
-            right_img: "images/break_right.png"
+            left_img: "images/break2.png",
+            right_img: "images/continue.png"
         });
 
         const break3 = makeBreakTrial({
             id: 503,
-            stimulus: `<div style="font-size: 48px; color: white;">
-                TAKE A BREAK
+            stimulus: `<div style="font-size: 48px; line-height: 1.5; color: black;">
+                You have completed block 3 of 4. You may take a short break before continuing the experiment.
             </div>`,
-            left_img: "images/break_left.png",
-            right_img: "images/break_right.png"
+            left_img: "images/break3.png",
+            right_img: "images/continue.png"
         });
 
         /* ------------------------------
@@ -232,24 +257,24 @@
         ------------------------------ */
 
         const end = makeBreakTrial({
-            id: 503,
-            stimulus: `<div style="font-size: 48px; color: white;">
+            id: 1000,
+            stimulus: `<div style="font-size: 48px; line-height: 1.5; color: black;">
                 Thank you for your participation, you have completed the experimental trials. 
-                <br> You may now remove your headphones so the experimenter can provide next steps.
+                <br><br> You may now remove your headphones so the experimenter can provide next steps.
             </div>`,
-            left_img: "images/break_left.png",
-            right_img: "images/break_right.png"
+            left_img: "images/end.png",
+            right_img: "images/end.png"
         });
 
-        const end_control = [
+        /*const end_control = [
             {
                 id: 1000,
-                participant_img: `Thank you for your participation, you have completed the experimental trials. 
-                <br> You may now remove your headphones so the experimenter can provide next steps.`,
+                participant_img: `<div style="font-size: 48px; color: black;"> Thank you for your participation, you have completed the experimental trials. 
+                <br><br><br> You may now remove your headphones so the experimenter can provide next steps.`,
                 left_img: "End",
                 right_img: "End"
             }
-        ];
+        ];*/
         /* ------------------------------
            Randomize trial order
         ------------------------------ */
@@ -275,30 +300,6 @@
                 );
             }
         };
-
-        function makeBreakTrial({ id, stimulus, left_img, right_img }) {
-            return {
-                type: jsPsychHtmlKeyboardResponse,
-                stimulus: stimulus,
-                choices: "NO_KEYS",
-
-                data: {
-                    trial_id: id,
-                    trial_type: "break",
-                    participant_img: stimulus,
-                    left_img: left_img,
-                    right_img: right_img
-                },
-
-                on_load: () => {
-                    controlWindow.postMessage({
-                        type: "update_trial",
-                        left_img: left_img,
-                        right_img: right_img
-                    }, "*");
-                }
-            };
-        }
 
         /* ------------------------------
            Listen for experimenter responses
@@ -431,14 +432,14 @@
         /* ------------------------------
            Debrief
         ------------------------------ */
-        const debrief = {
+        /*const debrief = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
             
             <p>Thank you for participating in this experiment...</p>
         `,
             choices: [" "]
-        };
+        };*/
 
         /* ------------------------------
            Save Data
@@ -476,8 +477,7 @@
             //...trials2_second_half,
             ...withITI(trials2_second_half, iti),
             end,
-            save_data,
-            debrief
+            save_data
         ];
 
         jsPsych.run(timeline);
