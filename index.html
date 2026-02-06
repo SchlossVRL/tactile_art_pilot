@@ -326,7 +326,7 @@
         ------------------------------ */
         const trials = randomized_sets.map(t => ({
             type: jsPsychHtmlKeyboardResponse,
-            stimulus: `<img src="${t.participant_img}">`,
+            stimulus: `<img src="${t.participant_img}" style="max-width:40vw; max-height:40vh;">`,
             choices: "NO_KEYS",
 
             data: {
@@ -352,7 +352,7 @@
 
         const trials2 = randomized_sets2.map(t => ({
             type: jsPsychHtmlKeyboardResponse,
-            stimulus: `<img src="${t.participant_img}">`,
+            stimulus: `<img src="${t.participant_img}" style="max-width:40vw; max-height:40vh;">`,
             choices: "NO_KEYS",
 
             data: {
